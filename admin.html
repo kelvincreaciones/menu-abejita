@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Admin · La Abejita</title>
+  <style>
+    :root {
+      --principal: #1A1A1A;
+      --acento: #F5C518;
+      --fondo: #FFFDF6;
+      --texto: #2b2320;
+      --gris: #8a807a;
+      --verde: #128C7E;
+      --rojo: #d94b40;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--fondo); color: var(--texto); line-height: 1.4; padding-bottom: 90px; }
+
+    header { background: var(--principal); color: #fff; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 1.1rem; }
+    header button { background: none; border: 1px solid rgba(255,255,255,.4); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: .8rem; cursor: pointer; }
+
+    main { max-width: 680px; margin: 0 auto; padding: 16px; }
+
+    /* Login */
+    .login { max-width: 480px; margin: 30px auto; background: #fff; border-radius: 16px; padding: 24px 20px; box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+    .login h2 { font-size: 1.3rem; margin-bottom: 6px; }
+    .login p.sub { color: var(--gris); font-size: .9rem; margin-bottom: 18px; }
+    .login input { width: 100%; padding: 13px 14px; font-size: .95rem; border: 1.5px solid #e5ddd5; border-radius: 12px; outline: none; margin-bottom: 14px; font-family: inherit; }
+    .login input:focus { border-color: var(--acento); }
+    .btn-principal { width: 100%; padding: 14px; border: none; border-radius: 12px; background: var(--principal); color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; }
+    details { margin-top: 18px; background: #faf6ee; border-radius: 12px; padding: 12px 14px; font-size: .85rem; }
+    details summary { cursor: pointer; font-weight: 600; }
+    details ol { margin: 10px 0 0 18px; }
+    details li { margin-bottom: 6px; }
+    details a { color: var(--verde); font-weight: 600; }
+
+    /* Editor */
+    .oculto { display: none !important; }
+    .bloque { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 16px rgba(0,0,0,.05); }
+    .bloque h2 { font-size: 1.05rem; margin-bottom: 12px; }
+    .campo { margin-bottom: 12px; }
+    .campo label { display: block; font-size: .82rem; font-weight: 600; margin-bottom: 4px; color: #5a524c; }
+    .campo input { width: 100%; padding: 10px 12px; font-size: .92rem; border: 1.5px solid #e5ddd5; border-radius: 10px; outline: none; font-family: inherit; }
+    .campo input:focus { border-color: var(--acento); }
+    .fila-color { display: flex; align-items: center; gap: 10px; }
+    .fila-color input[type=color] { width: 46px; height: 40px; padding: 2px; border-radius: 8px; }
+
+    .categoria { border: 1.5px solid #eee3d6; border-radius: 14px; padding: 12px; margin-bottom: 14px; }
+    .categoria-head { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+    .categoria-head input { flex: 1; padding: 9px 11px; font-size: .95rem; font-weight: 700; border: 1.5px solid #e5ddd5; border-radius: 10px; outline: none; }
+    .producto-fila { display: grid; grid-template-columns: 44px 1fr 90px 34px; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .producto-fila input { padding: 8px 9px; font-size: .85rem; border: 1.5px solid #e9e0d5; border-radius: 8px; outline: none; width: 100%; font-family: inherit; }
+    .producto-fila input:focus { border-color: var(--acento); }
+    .producto-fila .desc-fila { grid-column: 2 / 5; }
+    .icono-input { text-align: center; }
+    .btn-x { background: #fbeae8; color: var(--rojo); border: none; border-radius: 8px; height: 34px; cursor: pointer; font-size: 1rem; font-weight: 700; }
+    .btn-mini { background: #f3ecdd; border: none; border-radius: 9px; padding: 8px 12px; font-size: .82rem; font-weight: 600; cursor: pointer; margin-top: 6px; }
+    .btn-add-cat { background: var(--acento); border: none; border-radius: 10px; padding: 11px 14px; font-size: .9rem; font-weight: 700; cursor: pointer; width: 100%; }
+
+    /* Barra publicar */
+    .barra { position: fixed; bottom: 0; left: 0; right: 0; background: var(--verde); color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 -4px 16px rgba(0,0,0,.12); }
+    .barra span { font-size: .85rem; }
+    .barra button { background: #fff; color: var(--verde); border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: .95rem; cursor: pointer; }
+    .barra button:disabled { opacity: .6; cursor: default; }
+
+    .aviso { padding: 12px 14px; border-radius: 10px; font-size: .88rem; margin-bottom: 14px; }
+    .aviso.error { background: #fbeae8; color: var(--rojo); }
+    .aviso.ok { background: #e6f4ea; color: #1c7c3a; }
+    .cargando { text-align: center; color: var(--gris); padding: 30px; }
+  </style>
+</head>
+<body>
+
+  <!-- ===== LOGIN ===== -->
+  <div id="login">
+    <div class="login">
+      <h2>🐝 Panel de administrador</h2>
+      <p class="sub">Cafetería La Abejita — edición del menú</p>
+      <div id="loginError"></div>
+      <input id="tokenInput" type="password" placeholder="Pega aquí tu token de GitHub" autocomplete="off" />
+      <button class="btn-principal" onclick="entrar()">Entrar</button>
+
+      <details>
+        <summary>¿Cómo consigo mi token? (solo la primera vez)</summary>
+        <ol>
+          <li>Entra a <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">github.com/settings/tokens</a> (inicia sesión con tu cuenta).</li>
+          <li>Clic en <b>Generate new token</b>.</li>
+          <li>En <b>Repository access</b> elige <b>Only select repositories</b> → selecciona <b>menu-abejita</b>.</li>
+          <li>En <b>Permissions</b> → <b>Repository permissions</b> → <b>Contents</b> → ponlo en <b>Read and write</b>.</li>
+          <li>Clic en <b>Generate token</b>, copia el texto que aparece y pégalo arriba.</li>
+        </ol>
+        <p style="margin-top:10px;color:var(--gris)">El token queda guardado solo en este dispositivo. Si lo pierdes o quieres cambiarlo, puedes revocarlo en GitHub y crear otro.</p>
+      </details>
+    </div>
+  </div>
+
+  <!-- ===== EDITOR ===== -->
+  <div id="editor" class="oculto">
+    <header>
+      <h1>🐝 Editar menú</h1>
+      <button onclick="cerrarSesion()">Cerrar sesión</button>
+    </header>
+    <main>
+      <div id="avisos"></div>
+      <div id="contenido"><div class="cargando">Cargando menú actual…</div></div>
+    </main>
+    <div class="barra">
+      <span id="estadoBarra">Listo para editar</span>
+      <button id="btnPublicar" onclick="publicar()">Publicar cambios</button>
+    </div>
+  </div>
+
+  <script>
+    // ==== Datos del repositorio ====
+    const REPO = { owner: "kelvincreaciones", repo: "menu-abejita", branch: "main", path: "config.js" };
+    const API = `https://api.github.com/repos/${REPO.owner}/${REPO.repo}/contents/${REPO.path}`;
+
+    let token = localStorage.getItem('gh_token') || '';
+    let sha = null;            // sha del archivo config.js en GitHub (necesario para actualizar)
+    let estadoConfig = null;   // objeto CONFIG editable
+    let estadoMenu = null;     // arreglo MENU editable
+
+    // ---- Utilidades base64 seguras con acentos y emojis ----
+    function aBase64(str) {
+      const bytes = new TextEncoder().encode(str);
+      let bin = '';
+      bytes.forEach(b => bin += String.fromCharCode(b));
+      return btoa(bin);
+    }
+    function deBase64(b64) {
+      const bin = atob(b64.replace(/\s/g, ''));
+      const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+      return new TextDecoder().decode(bytes);
+    }
+
+    // Ejecuta el texto de config.js y devuelve sus objetos CONFIG y MENU
+    function parsearConfig(texto) {
+      const fn = new Function(texto + "\n; return { CONFIG: (typeof CONFIG!=='undefined'?CONFIG:{}), MENU: (typeof MENU!=='undefined'?MENU:[]) };");
+      return fn();
+    }
+
+    // ---- Login ----
+    function entrar() {
+      const t = document.getElementById('tokenInput').value.trim();
+      if (!t) { mostrarLoginError('Pega tu token para entrar.'); return; }
+      token = t;
+      localStorage.setItem('gh_token', token);
+      abrirEditor();
+    }
+    function mostrarLoginError(msg) {
+      document.getElementById('loginError').innerHTML = `<div class="aviso error">${msg}</div>`;
+    }
+    function cerrarSesion() {
+      localStorage.removeItem('gh_token');
+      token = '';
+      location.reload();
+    }
+
+    function abrirEditor() {
+      document.getElementById('login').classList.add('oculto');
+      document.getElementById('editor').classList.remove('oculto');
+      cargarConfig();
+    }
+
+    // ---- Cargar config actual desde GitHub ----
+    async function cargarConfig() {
+      const cont = document.getElementById('contenido');
+      cont.innerHTML = '<div class="cargando">Cargando menú actual…</div>';
+      try {
+        const r = await fetch(`${API}?ref=${REPO.branch}&t=${Date.now()}`, {
+          headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' }
+        });
+        if (r.status === 401) { fallarLogin('El token no es válido o expiró.'); return; }
+        if (r.status === 404) { fallarLogin('No se encontró el archivo config.js o el token no tiene acceso al repositorio.'); return; }
+        if (!r.ok) throw new Error('Error ' + r.status);
+        const data = await r.json();
+        sha = data.sha;
+        const texto = deBase64(data.content);
+        const parsed = parsearConfig(texto);
+        estadoConfig = parsed.CONFIG;
+        estadoMenu = parsed.MENU;
+        render();
+      } catch (e) {
+        cont.innerHTML = `<div class="aviso error">No se pudo cargar: ${e.message}. Revisa tu conexión e intenta de nuevo.</div>`;
+      }
+    }
+
+    function fallarLogin(msg) {
+      localStorage.removeItem('gh_token');
+      token = '';
+      document.getElementById('editor').classList.add('oculto');
+      document.getElementById('login').classList.remove('oculto');
+      mostrarLoginError(msg);
+    }
+
+    // ---- Dibujar el editor ----
+    function render() {
+      const c = estadoConfig, cont = document.getElementById('contenido');
+      cont.innerHTML = `
+        <div class="bloque">
+          <h2>Datos del negocio</h2>
+          <div class="campo"><label>Nombre</label><input value="${esc(c.nombreNegocio)}" oninput="estadoConfig.nombreNegocio=this.value"></div>
+          <div class="campo"><label>Eslogan (vacío = no se muestra)</label><input value="${esc(c.eslogan)}" oninput="estadoConfig.eslogan=this.value"></div>
+          <div class="campo"><label>WhatsApp (con código de país, sin +)</label><input value="${esc(c.whatsapp)}" oninput="estadoConfig.whatsapp=this.value"></div>
+          <div class="campo"><label>Moneda</label><input value="${esc(c.moneda)}" oninput="estadoConfig.moneda=this.value"></div>
+          <div class="campo"><label>Saludo del pedido</label><input value="${esc(c.saludoPedido)}" oninput="estadoConfig.saludoPedido=this.value"></div>
+          <div class="campo"><label>Colores (principal / acento / fondo)</label>
+            <div class="fila-color">
+              <input type="color" value="${esc(c.colorPrincipal)}" oninput="estadoConfig.colorPrincipal=this.value">
+              <input type="color" value="${esc(c.colorAcento)}" oninput="estadoConfig.colorAcento=this.value">
+              <input type="color" value="${esc(c.colorFondo)}" oninput="estadoConfig.colorFondo=this.value">
+            </div>
+          </div>
+        </div>
+        <div class="bloque">
+          <h2>Menú</h2>
+          <div id="categorias"></div>
+          <button class="btn-add-cat" onclick="agregarCategoria()">+ Agregar categoría</button>
+        </div>`;
+      renderCategorias();
+    }
+
+    function renderCategorias() {
+      const cats = document.getElementById('categorias');
+      cats.innerHTML = '';
+      estadoMenu.forEach((cat, ci) => {
+        const div = document.createElement('div');
+        div.className = 'categoria';
+        let filas = '';
+        cat.productos.forEach((p, pi) => {
+          filas += `
+            <div class="producto-fila">
+              <input class="icono-input" value="${esc(p.icono || '')}" oninput="estadoMenu[${ci}].productos[${pi}].icono=this.value" title="Emoji">
+              <input value="${esc(p.nombre)}" oninput="estadoMenu[${ci}].productos[${pi}].nombre=this.value" placeholder="Nombre del producto">
+              <input type="number" inputmode="numeric" value="${p.precio}" oninput="estadoMenu[${ci}].productos[${pi}].precio=parseInt(this.value)||0" placeholder="Precio">
+              <button class="btn-x" onclick="borrarProducto(${ci},${pi})" title="Quitar">✕</button>
+              <input class="desc-fila" value="${esc(p.descripcion || '')}" oninput="estadoMenu[${ci}].productos[${pi}].descripcion=this.value" placeholder="Descripción (opcional)">
+            </div>`;
+        });
+        div.innerHTML = `
+          <div class="categoria-head">
+            <input value="${esc(cat.categoria)}" oninput="estadoMenu[${ci}].categoria=this.value" placeholder="Nombre de la categoría">
+            <button class="btn-x" onclick="borrarCategoria(${ci})" title="Quitar categoría">✕</button>
+          </div>
+          ${filas}
+          <button class="btn-mini" onclick="agregarProducto(${ci})">+ Agregar producto</button>`;
+        cats.appendChild(div);
+      });
+    }
+
+    function agregarProducto(ci) {
+      estadoMenu[ci].productos.push({ nombre: '', precio: 0, descripcion: '', icono: '🍽️' });
+      renderCategorias();
+    }
+    function borrarProducto(ci, pi) {
+      estadoMenu[ci].productos.splice(pi, 1);
+      renderCategorias();
+    }
+    function agregarCategoria() {
+      estadoMenu.push({ categoria: 'Nueva categoría', productos: [] });
+      renderCategorias();
+    }
+    function borrarCategoria(ci) {
+      if (!confirm('¿Quitar esta categoría completa con sus productos?')) return;
+      estadoMenu.splice(ci, 1);
+      renderCategorias();
+    }
+
+    function esc(v) {
+      return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ---- Publicar a GitHub ----
+    async function publicar() {
+      const btn = document.getElementById('btnPublicar');
+      const estado = document.getElementById('estadoBarra');
+      limpiarAvisos();
+      btn.disabled = true;
+      estado.textContent = 'Publicando…';
+      const contenido =
+`// Configuración de ${estadoConfig.nombreNegocio || 'la cafetería'} — editado desde el panel de admin (admin.html)
+// Puedes editar a mano, pero es más fácil desde el panel.
+
+const CONFIG = ${JSON.stringify(estadoConfig, null, 2)};
+
+const MENU = ${JSON.stringify(estadoMenu, null, 2)};
+`;
+      try {
+        const r = await fetch(API, {
+          method: 'PUT',
+          headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' },
+          body: JSON.stringify({
+            message: 'Actualizar menú desde el panel de admin',
+            content: aBase64(contenido),
+            sha: sha,
+            branch: REPO.branch
+          })
+        });
+        if (r.status === 409) { avisar('error', 'El menú cambió desde otro lado. Recargando la versión más reciente…'); await cargarConfig(); return; }
+        if (!r.ok) { const err = await r.json().catch(()=>({})); throw new Error(err.message || ('Error ' + r.status)); }
+        const data = await r.json();
+        sha = data.content.sha;
+        avisar('ok', '✅ ¡Cambios publicados! Tu menú se actualizará para los clientes en 1-2 minutos. Recarga el menú para verlo.');
+        estado.textContent = 'Publicado';
+      } catch (e) {
+        avisar('error', 'No se pudo publicar: ' + e.message);
+        estado.textContent = 'Error al publicar';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function avisar(tipo, msg) {
+      document.getElementById('avisos').innerHTML = `<div class="aviso ${tipo}">${msg}</div>`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function limpiarAvisos() { document.getElementById('avisos').innerHTML = ''; }
+
+    // ---- Arranque ----
+    if (token) { abrirEditor(); }
+  </script>
+</body>
+</html>
