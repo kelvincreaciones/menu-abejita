@@ -40,15 +40,13 @@
     nav {
       position: sticky; top: 0; z-index: 20;
       background: var(--fondo);
-      padding: 12px 12px 8px;
-      display: flex; gap: 8px; overflow-x: auto;
+      padding: 12px 12px 10px;
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
       box-shadow: 0 2px 8px rgba(0,0,0,.03);
     }
-    nav::-webkit-scrollbar { display: none; }
     nav button {
-      flex: 0 0 auto;
       border: 1px solid #e5ddd5; background: #fff; color: var(--texto);
-      padding: 8px 14px; border-radius: 999px; font-size: .85rem; font-weight: 600;
+      padding: 8px 13px; border-radius: 999px; font-size: .82rem; font-weight: 600;
       cursor: pointer; white-space: nowrap; transition: .15s;
     }
     nav button.activo { background: var(--principal); color: #fff; border-color: var(--principal); }
