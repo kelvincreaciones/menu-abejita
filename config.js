@@ -14,13 +14,81 @@ const CONFIG = {
   "zonaHoraria": "America/Santo_Domingo",
   "mensajeCerrado": "Ahora mismo no estamos laborando. Puedes ver el menú y escribirnos cuando estemos abiertos. ¡Te esperamos! 🐝",
   "horario": {
-    "lun": { "abre": "06:00", "cierra": "21:00" },
-    "mar": { "abre": "06:00", "cierra": "21:00" },
-    "mie": { "abre": "06:00", "cierra": "21:00" },
-    "jue": { "abre": "06:00", "cierra": "21:00" },
-    "vie": { "abre": "06:00", "cierra": "21:00" },
-    "sab": { "abre": "06:00", "cierra": "21:00" },
-    "dom": { "abre": "07:00", "cierra": "14:00" }
+    "lun": {
+      "turnos": [
+        {
+          "abre": "06:00",
+          "cierra": "22:30"
+        },
+        {
+          "abre": "11:30",
+          "cierra": "15:00"
+        }
+      ]
+    },
+    "mar": {
+      "turnos": [
+        {
+          "abre": "06:00",
+          "cierra": "22:30"
+        },
+        {
+          "abre": "11:30",
+          "cierra": "15:00"
+        }
+      ]
+    },
+    "mie": {
+      "turnos": []
+    },
+    "jue": {
+      "turnos": [
+        {
+          "abre": "06:00",
+          "cierra": "22:30"
+        },
+        {
+          "abre": "11:30",
+          "cierra": "15:00"
+        }
+      ]
+    },
+    "vie": {
+      "turnos": [
+        {
+          "abre": "06:00",
+          "cierra": "22:30"
+        },
+        {
+          "abre": "11:30",
+          "cierra": "15:00"
+        }
+      ]
+    },
+    "sab": {
+      "turnos": [
+        {
+          "abre": "06:00",
+          "cierra": "22:30"
+        },
+        {
+          "abre": "11:30",
+          "cierra": "15:00"
+        }
+      ]
+    },
+    "dom": {
+      "turnos": [
+        {
+          "abre": "06:00",
+          "cierra": "22:30"
+        },
+        {
+          "abre": "11:30",
+          "cierra": "15:00"
+        }
+      ]
+    }
   }
 };
 
