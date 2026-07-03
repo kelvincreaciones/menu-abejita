@@ -562,12 +562,6 @@ const MENU = [
         "precio": 15,
         "descripcion": "",
         "icono": "💧"
-      },
-      {
-        "nombre": "Prueba ",
-        "precio": 100,
-        "descripcion": "",
-        "icono": "👍"
       }
     ]
   }
