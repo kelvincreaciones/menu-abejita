@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Menú</title>
+  <!-- El título y el favicon se ajustan solos con tu config -->
+  <style>
+    :root {
+      --principal: #1A1A1A;
+      --acento: #F5C518;
+      --fondo: #FFFDF6;
+      --texto: #2b2320;
+      --gris: #8a807a;
+      --tarjeta: #ffffff;
+      --sombra: 0 4px 16px rgba(0,0,0,.06);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--fondo);
+      color: var(--texto);
+      padding-bottom: 110px; /* espacio para la barra del carrito */
+      line-height: 1.4;
+    }
+
+    /* ---- Encabezado ---- */
+    header {
+      background: var(--principal);
+      color: #fff;
+      padding: 28px 20px 24px;
+      text-align: center;
+      border-radius: 0 0 24px 24px;
+    }
+    header img.logo { width: 92px; height: 82px; object-fit: contain; margin-bottom: 8px; background: #fff; border-radius: 18px; padding: 8px; }
+    header h1 { font-size: 1.6rem; letter-spacing: .3px; }
+    header p { color: var(--acento); font-size: .95rem; margin-top: 4px; font-weight: 600; }
+
+    /* ---- Navegación de categorías (chips) ---- */
+    nav {
+      position: sticky; top: 0; z-index: 20;
+      background: var(--fondo);
+      padding: 12px 12px 8px;
+      display: flex; gap: 8px; overflow-x: auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,.03);
+    }
+    nav::-webkit-scrollbar { display: none; }
+    nav button {
+      flex: 0 0 auto;
+      border: 1px solid #e5ddd5; background: #fff; color: var(--texto);
+      padding: 8px 14px; border-radius: 999px; font-size: .85rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap; transition: .15s;
+    }
+    nav button.activo { background: var(--principal); color: #fff; border-color: var(--principal); }
+
+    /* ---- Secciones y productos ---- */
+    main { padding: 8px 14px; max-width: 640px; margin: 0 auto; }
+    .categoria-titulo { font-size: 1.15rem; font-weight: 700; margin: 22px 4px 12px; }
+    .producto {
+      background: var(--tarjeta); border-radius: 16px; padding: 12px;
+      display: flex; flex-direction: column; margin-bottom: 12px;
+      box-shadow: var(--sombra);
+    }
+    .producto-row { display: flex; gap: 12px; align-items: center; }
+    .nota-input {
+      display: none; margin-top: 10px; width: 100%; padding: 9px 12px;
+      font-size: .85rem; border: 1.5px dashed #ddd2c6; border-radius: 10px;
+      outline: none; background: #fffdf8; font-family: inherit;
+    }
+    .nota-input.visible { display: block; }
+    .nota-input:focus { border-style: solid; border-color: var(--acento); }
+    .producto .img {
+      width: 74px; height: 74px; border-radius: 12px; flex: 0 0 auto;
+      background: #f0e9e1 center/cover no-repeat;
+      display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+    }
+    .producto .info { flex: 1; min-width: 0; }
+    .producto .info h3 { font-size: 1rem; margin-bottom: 2px; }
+    .producto .info p { font-size: .82rem; color: var(--gris); margin-bottom: 6px; }
+    .producto .info .precio { font-weight: 700; color: var(--principal); }
+
+    /* ---- Control + / - / cantidad ---- */
+    .control { display: flex; align-items: center; gap: 10px; }
+    .control button {
+      width: 34px; height: 34px; border-radius: 50%; border: none;
+      background: var(--acento); color: #1a1a1a; font-size: 1.3rem; line-height: 1; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .control button:active { transform: scale(.9); }
+    .control .cant { min-width: 20px; text-align: center; font-weight: 700; }
+    .control.oculto .cant, .control.oculto .menos { display: none; }
+
+    /* ---- Barra del carrito (abajo, fija) ---- */
+    .barra-carrito {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
+      background: #128C7E; color: #fff; /* verde WhatsApp */
+      padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; box-shadow: 0 -4px 16px rgba(0,0,0,.12);
+      transform: translateY(120%); transition: transform .25s ease;
+    }
+    .barra-carrito.visible { transform: translateY(0); }
+    .barra-carrito .izq { display: flex; flex-direction: column; }
+    .barra-carrito .izq small { opacity: .85; font-size: .78rem; }
+    .barra-carrito .izq b { font-size: 1.15rem; }
+    .barra-carrito .btn-enviar { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1rem; }
+    .barra-carrito svg { width: 22px; height: 22px; fill: #fff; }
+
+    footer { text-align: center; color: var(--gris); font-size: .78rem; padding: 20px; }
+
+    /* ---- Ventana de confirmación (nombre + para llevar/comer aquí) ---- */
+    .overlay {
+      position: fixed; inset: 0; z-index: 50;
+      background: rgba(0,0,0,.5);
+      display: none; align-items: flex-end; justify-content: center;
+    }
+    .overlay.abierto { display: flex; }
+    .modal {
+      background: #fff; width: 100%; max-width: 560px;
+      border-radius: 22px 22px 0 0; padding: 22px 20px 26px;
+      animation: subir .25s ease;
+    }
+    @keyframes subir { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal h3 { font-size: 1.2rem; margin-bottom: 4px; }
+    .modal .sub { color: var(--gris); font-size: .85rem; margin-bottom: 16px; }
+    .modal label { display: block; font-weight: 600; font-size: .88rem; margin: 0 0 6px 2px; }
+    .modal input, .modal textarea {
+      width: 100%; padding: 13px 14px; font-size: 1rem; margin-bottom: 18px;
+      border: 1.5px solid #e5ddd5; border-radius: 12px; outline: none;
+      font-family: inherit; resize: vertical;
+    }
+    .modal input:focus, .modal textarea:focus { border-color: var(--acento); }
+    .opciones { display: flex; gap: 10px; margin-bottom: 20px; }
+    .opciones .opcion {
+      flex: 1; padding: 14px 8px; border-radius: 12px; cursor: pointer;
+      border: 1.5px solid #e5ddd5; background: #fff; color: var(--texto);
+      font-size: .95rem; font-weight: 600; text-align: center; transition: .15s;
+    }
+    .opciones .opcion.activa { border-color: var(--principal); background: var(--principal); color: #fff; }
+    .modal-total { display: flex; justify-content: space-between; align-items: center; font-size: 1.05rem; margin-bottom: 16px; }
+    .modal-total b { font-size: 1.3rem; color: var(--principal); }
+    .enviar-final {
+      width: 100%; padding: 15px; border: none; border-radius: 14px; cursor: pointer;
+      background: #128C7E; color: #fff; font-size: 1.05rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .enviar-final svg { width: 22px; height: 22px; fill: #fff; }
+    .cancelar { width: 100%; padding: 12px; margin-top: 8px; border: none; background: none; color: var(--gris); font-size: .9rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <header id="header"></header>
+  <nav id="nav"></nav>
+  <main id="menu"></main>
+  <footer>Pedidos por WhatsApp · Menú digital</footer>
+
+  <!-- Barra flotante del carrito -->
+  <div class="barra-carrito" id="barraCarrito" onclick="abrirModal()">
+    <div class="izq">
+      <small id="resumenItems">0 productos</small>
+      <b id="resumenTotal">$0</b>
+    </div>
+    <div class="btn-enviar">
+      Enviar por WhatsApp
+      <svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.512 5.26l-.999 3.648 3.986-1.607zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.71.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+    </div>
+  </div>
+
+  <!-- Ventana de confirmación -->
+  <div class="overlay" id="overlay" onclick="cerrarModalFondo(event)">
+    <div class="modal">
+      <h3>Casi listo 🐝</h3>
+      <p class="sub">Completa estos datos y enviamos tu pedido.</p>
+
+      <label for="clienteNombre">Tu nombre</label>
+      <input id="clienteNombre" type="text" placeholder="Ej: María Pérez" autocomplete="name" />
+
+      <label for="clienteComentario">Comentario (opcional)</label>
+      <textarea id="clienteComentario" rows="2" placeholder="Ej: llamar al llegar, poco hielo en todo, sin cubiertos..."></textarea>
+
+      <label>¿Cómo lo prefieres?</label>
+      <div class="opciones" id="opciones">
+        <button type="button" class="opcion activa" data-tipo="Para llevar" onclick="elegirTipo(this)">🥡 Para llevar</button>
+        <button type="button" class="opcion" data-tipo="Comer aquí" onclick="elegirTipo(this)">🍽️ Comer aquí</button>
+      </div>
+
+      <div class="modal-total"><span>Total a pagar</span><b id="modalTotal">RD$0</b></div>
+
+      <button class="enviar-final" onclick="enviarWhatsApp()">
+        Enviar por WhatsApp
+        <svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.512 5.26l-.999 3.648 3.986-1.607zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.71.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+      </button>
+      <button class="cancelar" onclick="cerrarModal()">Seguir pidiendo</button>
+    </div>
+  </div>
+
+  <!-- Aquí se cargan tus datos y productos.
+       El ?v=... evita que el navegador muestre una versión vieja cuando editas el menú. -->
+  <script>document.write('<script src="config.js?v=' + Date.now() + '"><\/script>');</script>
+  <script>
+    // ====== No necesitas tocar nada de aquí para abajo ======
+
+    const carrito = {}; // { "nombre|precio": cantidad }
+    const notas = {};   // { "nombre|precio": "sin azúcar" }
+    let tipoPedido = "Para llevar";
+
+    function guardarNota(id, val) {
+      val = val.trim();
+      if (val) notas[id] = val; else delete notas[id];
+    }
+
+    function totalCarrito() {
+      let total = 0;
+      for (const id in carrito) total += parseInt(id.split('|')[1], 10) * carrito[id];
+      return total;
+    }
+
+    function abrirModal() {
+      if (Object.keys(carrito).length === 0) return;
+      document.getElementById('modalTotal').textContent = formatoPrecio(totalCarrito());
+      document.getElementById('overlay').classList.add('abierto');
+    }
+    function cerrarModal() { document.getElementById('overlay').classList.remove('abierto'); }
+    function cerrarModalFondo(e) { if (e.target.id === 'overlay') cerrarModal(); }
+    function elegirTipo(btn) {
+      tipoPedido = btn.dataset.tipo;
+      document.querySelectorAll('#opciones .opcion').forEach(b => b.classList.remove('activa'));
+      btn.classList.add('activa');
+    }
+
+    // Aplica colores, nombre y logo desde el config
+    function aplicarConfig() {
+      document.documentElement.style.setProperty('--principal', CONFIG.colorPrincipal);
+      if (CONFIG.colorAcento) document.documentElement.style.setProperty('--acento', CONFIG.colorAcento);
+      document.documentElement.style.setProperty('--fondo', CONFIG.colorFondo);
+      document.title = "Menú · " + CONFIG.nombreNegocio;
+
+      const h = document.getElementById('header');
+      // Si el logo no existe todavía, la imagen se oculta sola (onerror).
+      h.innerHTML =
+        (CONFIG.logo ? `<img class="logo" src="${CONFIG.logo}" alt="logo" onerror="this.remove()">` : '') +
+        `<h1>${CONFIG.nombreNegocio}</h1>` +
+        (CONFIG.eslogan ? `<p>${CONFIG.eslogan}</p>` : '');
+    }
+
+    function formatoPrecio(n) {
+      return CONFIG.moneda + n.toLocaleString('es-CO');
+    }
+
+    function idProducto(p) { return p.nombre + '|' + p.precio; }
+
+    function pintarMenu() {
+      const nav = document.getElementById('nav');
+      const menu = document.getElementById('menu');
+      nav.innerHTML = '';
+      menu.innerHTML = '';
+
+      // chip "Todas" (muestra el menú completo)
+      const chipTodas = document.createElement('button');
+      chipTodas.textContent = 'Todas';
+      chipTodas.classList.add('activo');
+      chipTodas.onclick = () => filtrar('todas', chipTodas);
+      nav.appendChild(chipTodas);
+
+      MENU.forEach((cat, i) => {
+        // chip de navegación (filtro)
+        const chip = document.createElement('button');
+        chip.textContent = cat.categoria;
+        chip.onclick = () => filtrar(i, chip);
+        nav.appendChild(chip);
+
+        // sección (contiene el título y sus productos, para poder filtrar)
+        const seccion = document.createElement('section');
+        seccion.className = 'categoria-seccion';
+        seccion.dataset.cat = i;
+
+        const titulo = document.createElement('h2');
+        titulo.className = 'categoria-titulo';
+        titulo.textContent = cat.categoria;
+        seccion.appendChild(titulo);
+
+        cat.productos.forEach(p => {
+          const id = idProducto(p);
+          const div = document.createElement('div');
+          div.className = 'producto';
+          const idEsc = id.replace(/'/g,"\\'");
+          div.innerHTML = `
+            <div class="producto-row">
+              <div class="img" style="${p.imagen ? `background-image:url('${p.imagen}')` : ''}">
+                ${p.imagen ? '' : (p.icono || '🍽️')}
+              </div>
+              <div class="info">
+                <h3>${p.nombre}</h3>
+                ${p.descripcion ? `<p>${p.descripcion}</p>` : ''}
+                <div class="precio">${formatoPrecio(p.precio)}</div>
+              </div>
+              <div class="control oculto" data-id="${id}">
+                <button class="menos" onclick="cambiar('${idEsc}', -1)">−</button>
+                <span class="cant">0</span>
+                <button class="mas" onclick="cambiar('${idEsc}', 1)">+</button>
+              </div>
+            </div>
+            <input class="nota-input" data-nota="${id}" type="text"
+                   placeholder="📝 Nota (ej: sin azúcar, poco hielo)"
+                   oninput="guardarNota('${idEsc}', this.value)" />`;
+          seccion.appendChild(div);
+        });
+
+        menu.appendChild(seccion);
+      });
+    }
+
+    function filtrar(cat, chip) {
+      // resaltar el chip activo
+      document.querySelectorAll('#nav button').forEach(b => b.classList.remove('activo'));
+      chip.classList.add('activo');
+      // mostrar solo la categoría elegida (o todas)
+      document.querySelectorAll('.categoria-seccion').forEach(s => {
+        s.style.display = (cat === 'todas' || s.dataset.cat === String(cat)) ? '' : 'none';
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cambiar(id, delta) {
+      carrito[id] = (carrito[id] || 0) + delta;
+      if (carrito[id] <= 0) delete carrito[id];
+      actualizarUI();
+    }
+
+    function actualizarUI() {
+      // actualizar cada control
+      document.querySelectorAll('.control').forEach(c => {
+        const id = c.dataset.id;
+        const cant = carrito[id] || 0;
+        c.querySelector('.cant').textContent = cant;
+        c.classList.toggle('oculto', cant === 0);
+      });
+
+      // mostrar el campo de nota solo si el producto está en el carrito
+      document.querySelectorAll('.nota-input').forEach(inp => {
+        const cant = carrito[inp.dataset.nota] || 0;
+        inp.classList.toggle('visible', cant > 0);
+      });
+
+      // resumen de la barra
+      let totalItems = 0, totalPrecio = 0;
+      for (const id in carrito) {
+        const precio = parseInt(id.split('|')[1], 10);
+        totalItems += carrito[id];
+        totalPrecio += precio * carrito[id];
+      }
+      document.getElementById('resumenItems').textContent =
+        totalItems + (totalItems === 1 ? ' producto' : ' productos');
+      document.getElementById('resumenTotal').textContent = formatoPrecio(totalPrecio);
+      document.getElementById('barraCarrito').classList.toggle('visible', totalItems > 0);
+    }
+
+    function enviarWhatsApp() {
+      let totalPrecio = 0;
+      let lineas = [];
+      for (const id in carrito) {
+        const [nombre, precioStr] = id.split('|');
+        const precio = parseInt(precioStr, 10);
+        const cant = carrito[id];
+        const subtotal = precio * cant;
+        totalPrecio += subtotal;
+        let linea = `• ${cant}x ${nombre} — ${formatoPrecio(subtotal)}`;
+        if (notas[id]) linea += `\n   (Nota: ${notas[id]})`;
+        lineas.push(linea);
+      }
+      if (lineas.length === 0) return;
+
+      const nombre = document.getElementById('clienteNombre').value.trim();
+      const comentario = document.getElementById('clienteComentario').value.trim();
+      const iconoTipo = tipoPedido === 'Comer aquí' ? '🍽️' : '🥡';
+
+      const mensaje =
+        CONFIG.saludoPedido + '\n\n' +
+        (nombre ? '👤 Cliente: ' + nombre + '\n' : '') +
+        iconoTipo + ' ' + tipoPedido + '\n' +
+        (comentario ? '💬 Comentario: ' + comentario + '\n' : '') +
+        '\n' +
+        lineas.join('\n') +
+        '\n\n*TOTAL: ' + formatoPrecio(totalPrecio) + '*' +
+        '\n\n_Enviado desde el menú de ' + CONFIG.nombreNegocio + '_';
+
+      const url = 'https://wa.me/' + CONFIG.whatsapp + '?text=' + encodeURIComponent(mensaje);
+      window.open(url, '_blank');
+      cerrarModal();
+    }
+
+    // Arranque
+    aplicarConfig();
+    pintarMenu();
+    actualizarUI();
+  </script>
+</body>
+</html>
