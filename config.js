@@ -18,11 +18,11 @@ const CONFIG = {
       "turnos": [
         {
           "abre": "06:00",
-          "cierra": "22:30"
+          "cierra": "11:30"
         },
         {
-          "abre": "11:30",
-          "cierra": "15:00"
+          "abre": "15:00",
+          "cierra": "22:00"
         }
       ]
     },
@@ -30,11 +30,11 @@ const CONFIG = {
       "turnos": [
         {
           "abre": "06:00",
-          "cierra": "22:30"
+          "cierra": "11:30"
         },
         {
-          "abre": "11:30",
-          "cierra": "15:00"
+          "abre": "15:00",
+          "cierra": "22:00"
         }
       ]
     },
@@ -45,11 +45,11 @@ const CONFIG = {
       "turnos": [
         {
           "abre": "06:00",
-          "cierra": "22:30"
+          "cierra": "11:30"
         },
         {
-          "abre": "11:30",
-          "cierra": "15:00"
+          "abre": "15:00",
+          "cierra": "22:00"
         }
       ]
     },
@@ -60,7 +60,7 @@ const CONFIG = {
           "cierra": "11:30"
         },
         {
-          "abre": "16:00",
+          "abre": "15:00",
           "cierra": "22:00"
         }
       ]
@@ -69,11 +69,11 @@ const CONFIG = {
       "turnos": [
         {
           "abre": "06:00",
-          "cierra": "22:30"
+          "cierra": "11:30"
         },
         {
-          "abre": "11:30",
-          "cierra": "15:00"
+          "abre": "15:00",
+          "cierra": "22:00"
         }
       ]
     },
@@ -81,11 +81,11 @@ const CONFIG = {
       "turnos": [
         {
           "abre": "06:00",
-          "cierra": "22:30"
+          "cierra": "11:30"
         },
         {
-          "abre": "11:30",
-          "cierra": "15:00"
+          "abre": "15:00",
+          "cierra": "22:00"
         }
       ]
     }
