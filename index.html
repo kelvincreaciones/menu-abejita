@@ -106,8 +106,11 @@
     footer { text-align: center; color: var(--gris); font-size: .78rem; padding: 20px; }
 
     /* ---- Aviso de cerrado ---- */
-    .oculto { display: none !important; }
+    .escondido { display: none !important; }
     .banner-cerrado { background: #fbeae8; color: #c0392b; text-align: center; font-size: .85rem; font-weight: 700; padding: 10px 14px; cursor: pointer; }
+    /* Cuando el negocio está cerrado, los botones + se ven deshabilitados */
+    body.cerrado .control .mas { background: #cfc9c1; }
+    .aviso-cerrado-modal { background: #fbeae8; color: #c0392b; font-weight: 600; font-size: .85rem; padding: 8px 12px; border-radius: 10px; margin-bottom: 14px; }
     .horario-lista { text-align: left; background: #faf6ee; border-radius: 12px; padding: 8px 14px; margin-top: 4px; }
     .fila-horario { display: flex; justify-content: space-between; padding: 5px 0; font-size: .92rem; border-bottom: 1px solid #efe6d8; }
     .fila-horario:last-child { border-bottom: none; }
@@ -157,7 +160,7 @@
 
   <header id="header"></header>
   <nav id="nav"></nav>
-  <div id="bannerCerrado" class="banner-cerrado oculto" onclick="mostrarCerrado()">🔴 Cerrado ahora · toca para ver el horario</div>
+  <div id="bannerCerrado" class="banner-cerrado escondido" onclick="mostrarCerrado()">🔴 Cerrado ahora — no se pueden hacer pedidos · toca para ver el horario</div>
   <main id="menu"></main>
   <footer>Pedidos por WhatsApp · Menú digital</footer>
 
@@ -178,9 +181,10 @@
     <div class="modal" style="text-align:center">
       <div style="font-size:2.6rem; margin-bottom:4px">🕒</div>
       <h3>Ahora estamos cerrados</h3>
-      <p class="sub" id="msgCerrado" style="margin:6px 0 14px"></p>
+      <p class="sub" id="msgCerrado" style="margin:6px 0 10px"></p>
+      <div class="aviso-cerrado-modal">🔒 No se pueden hacer pedidos hasta que abramos.</div>
       <div id="horarioLista" class="horario-lista"></div>
-      <button class="enviar-final" style="background:var(--principal); margin-top:16px" onclick="ocultarCerrado()">Ver el menú de todos modos</button>
+      <button class="enviar-final" style="background:var(--principal); margin-top:16px" onclick="ocultarCerrado()">Ver el menú (solo mirar)</button>
     </div>
   </div>
 
@@ -221,6 +225,7 @@
     const carrito = {}; // { "nombre|precio": cantidad }
     const notas = {};   // { "nombre|precio": "sin azúcar" }
     let tipoPedido = "Para llevar";
+    let negocioAbierto = true; // se calcula al arrancar según el horario
 
     function guardarNota(id, val) {
       val = val.trim();
@@ -340,6 +345,7 @@
     }
 
     function cambiar(id, delta) {
+      if (!negocioAbierto) { mostrarCerrado(); return; }
       carrito[id] = (carrito[id] || 0) + delta;
       if (carrito[id] <= 0) delete carrito[id];
       actualizarUI();
@@ -446,8 +452,10 @@
     function ocultarCerrado() { document.getElementById('overlayCerrado').classList.remove('abierto'); }
     function fondoCerrado(e) { if (e.target.id === 'overlayCerrado') ocultarCerrado(); }
     function verificarHorario() {
-      if (estaAbierto()) return;
-      document.getElementById('bannerCerrado').classList.remove('oculto');
+      negocioAbierto = estaAbierto();
+      if (negocioAbierto) return;
+      document.body.classList.add('cerrado');
+      document.getElementById('bannerCerrado').classList.remove('escondido');
       mostrarCerrado();
     }
 
