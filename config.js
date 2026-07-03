@@ -61,7 +61,7 @@ const CONFIG = {
         },
         {
           "abre": "11:30",
-          "cierra": "15:00"
+          "cierra": "16:00"
         }
       ]
     },
