@@ -59,6 +59,12 @@
     .btn-mini { background: #f3ecdd; border: none; border-radius: 9px; padding: 8px 12px; font-size: .82rem; font-weight: 600; cursor: pointer; margin-top: 6px; }
     .btn-add-cat { background: var(--acento); border: none; border-radius: 10px; padding: 11px 14px; font-size: .9rem; font-weight: 700; cursor: pointer; width: 100%; }
 
+    .fila-dia { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .dia-chk { font-size: .9rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .dia-chk input { width: 18px; height: 18px; }
+    .fila-dia input[type=time] { padding: 8px; border: 1.5px solid #e5ddd5; border-radius: 8px; font-family: inherit; font-size: .85rem; }
+    .fila-dia input[type=time]:disabled { background: #f2eee7; color: #bbb; }
+
     /* Barra publicar */
     .barra { position: fixed; bottom: 0; left: 0; right: 0; background: var(--verde); color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 -4px 16px rgba(0,0,0,.12); }
     .barra span { font-size: .85rem; }
@@ -195,8 +201,18 @@
       mostrarLoginError(msg);
     }
 
+    const DIAS = [['lun','Lunes'],['mar','Martes'],['mie','Miércoles'],['jue','Jueves'],['vie','Viernes'],['sab','Sábado'],['dom','Domingo']];
+
+    function asegurarDefaults() {
+      if (estadoConfig.mensajeCerrado == null) estadoConfig.mensajeCerrado = 'Ahora mismo no estamos laborando. Puedes ver el menú y escribirnos cuando estemos abiertos. ¡Te esperamos! 🐝';
+      if (!estadoConfig.zonaHoraria) estadoConfig.zonaHoraria = 'America/Santo_Domingo';
+      if (!estadoConfig.horario) estadoConfig.horario = {};
+      DIAS.forEach(([k]) => { if (!estadoConfig.horario[k]) estadoConfig.horario[k] = { abre: '', cierra: '' }; });
+    }
+
     // ---- Dibujar el editor ----
     function render() {
+      asegurarDefaults();
       const c = estadoConfig, cont = document.getElementById('contenido');
       cont.innerHTML = `
         <div class="bloque">
@@ -206,6 +222,7 @@
           <div class="campo"><label>WhatsApp (con código de país, sin +)</label><input value="${esc(c.whatsapp)}" oninput="estadoConfig.whatsapp=this.value"></div>
           <div class="campo"><label>Moneda</label><input value="${esc(c.moneda)}" oninput="estadoConfig.moneda=this.value"></div>
           <div class="campo"><label>Saludo del pedido</label><input value="${esc(c.saludoPedido)}" oninput="estadoConfig.saludoPedido=this.value"></div>
+          <div class="campo"><label>Mensaje cuando está cerrado</label><input value="${esc(c.mensajeCerrado)}" oninput="estadoConfig.mensajeCerrado=this.value"></div>
           <div class="campo"><label>Colores (principal / acento / fondo)</label>
             <div class="fila-color">
               <input type="color" value="${esc(c.colorPrincipal)}" oninput="estadoConfig.colorPrincipal=this.value">
@@ -215,12 +232,39 @@
           </div>
         </div>
         <div class="bloque">
+          <h2>Horario de atención</h2>
+          <div id="horarioEditor"></div>
+          <p style="font-size:.8rem;color:var(--gris);margin-top:8px">Desmarca un día para dejarlo como <b>Cerrado</b>. Las horas van en formato 24h.</p>
+        </div>
+        <div class="bloque">
           <h2>Menú</h2>
           <div id="categorias"></div>
           <button class="btn-add-cat" onclick="agregarCategoria()">+ Agregar categoría</button>
         </div>`;
+      renderHorario();
       renderCategorias();
     }
+
+    function renderHorario() {
+      const cont = document.getElementById('horarioEditor');
+      cont.innerHTML = '';
+      DIAS.forEach(([k, label]) => {
+        const h = estadoConfig.horario[k] || { abre: '', cierra: '' };
+        const abierto = !!(h.abre && h.cierra);
+        const row = document.createElement('div');
+        row.className = 'fila-dia';
+        row.innerHTML = `
+          <label class="dia-chk"><input type="checkbox" ${abierto ? 'checked' : ''} onchange="toggleDia('${k}', this.checked)"> ${label}</label>
+          <input type="time" value="${esc(h.abre)}" ${abierto ? '' : 'disabled'} onchange="setHora('${k}','abre',this.value)">
+          <input type="time" value="${esc(h.cierra)}" ${abierto ? '' : 'disabled'} onchange="setHora('${k}','cierra',this.value)">`;
+        cont.appendChild(row);
+      });
+    }
+    function toggleDia(k, on) {
+      estadoConfig.horario[k] = on ? { abre: '06:00', cierra: '21:00' } : { abre: '', cierra: '' };
+      renderHorario();
+    }
+    function setHora(k, campo, val) { estadoConfig.horario[k][campo] = val; }
 
     function renderCategorias() {
       const cats = document.getElementById('categorias');

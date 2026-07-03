@@ -10,7 +10,18 @@ const CONFIG = {
   "colorPrincipal": "#1A1A1A",
   "colorAcento": "#F5C518",
   "colorFondo": "#FFFDF6",
-  "saludoPedido": "¡Hola Abejita! Quiero hacer este pedido:"
+  "saludoPedido": "¡Hola Abejita! Quiero hacer este pedido:",
+  "zonaHoraria": "America/Santo_Domingo",
+  "mensajeCerrado": "Ahora mismo no estamos laborando. Puedes ver el menú y escribirnos cuando estemos abiertos. ¡Te esperamos! 🐝",
+  "horario": {
+    "lun": { "abre": "06:00", "cierra": "21:00" },
+    "mar": { "abre": "06:00", "cierra": "21:00" },
+    "mie": { "abre": "06:00", "cierra": "21:00" },
+    "jue": { "abre": "06:00", "cierra": "21:00" },
+    "vie": { "abre": "06:00", "cierra": "21:00" },
+    "sab": { "abre": "06:00", "cierra": "21:00" },
+    "dom": { "abre": "07:00", "cierra": "14:00" }
+  }
 };
 
 const MENU = [
