@@ -59,11 +59,15 @@
     .btn-mini { background: #f3ecdd; border: none; border-radius: 9px; padding: 8px 12px; font-size: .82rem; font-weight: 600; cursor: pointer; margin-top: 6px; }
     .btn-add-cat { background: var(--acento); border: none; border-radius: 10px; padding: 11px 14px; font-size: .9rem; font-weight: 700; cursor: pointer; width: 100%; }
 
-    .fila-dia { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 8px; align-items: center; margin-bottom: 8px; }
-    .dia-chk { font-size: .9rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .dia-card { border: 1.5px solid #eee3d6; border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
+    .dia-chk { font-size: .95rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
     .dia-chk input { width: 18px; height: 18px; }
-    .fila-dia input[type=time] { padding: 8px; border: 1.5px solid #e5ddd5; border-radius: 8px; font-family: inherit; font-size: .85rem; }
-    .fila-dia input[type=time]:disabled { background: #f2eee7; color: #bbb; }
+    .turnos { margin-top: 10px; }
+    .turno-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .turno-row .etq { font-size: .78rem; color: var(--gris); min-width: 52px; }
+    .turno-row input[type=time] { flex: 1; padding: 8px; border: 1.5px solid #e5ddd5; border-radius: 8px; font-family: inherit; font-size: .85rem; }
+    .turno-row span.a { color: var(--gris); font-size: .85rem; }
+    .pausa-chk { font-size: .85rem; display: flex; align-items: center; gap: 6px; color: #5a524c; cursor: pointer; margin: 2px 0 8px; }
 
     /* Barra publicar */
     .barra { position: fixed; bottom: 0; left: 0; right: 0; background: var(--verde); color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 -4px 16px rgba(0,0,0,.12); }
@@ -203,11 +207,19 @@
 
     const DIAS = [['lun','Lunes'],['mar','Martes'],['mie','Miércoles'],['jue','Jueves'],['vie','Viernes'],['sab','Sábado'],['dom','Domingo']];
 
+    // Convierte cualquier formato de día a { turnos: [{abre,cierra}, ...] }
+    function turnosDe(h) {
+      if (!h) return [];
+      if (Array.isArray(h.turnos)) return h.turnos.filter(t => t && t.abre && t.cierra).map(t => ({ abre: t.abre, cierra: t.cierra }));
+      if (h.abre && h.cierra) return [{ abre: h.abre, cierra: h.cierra }];
+      return [];
+    }
     function asegurarDefaults() {
       if (estadoConfig.mensajeCerrado == null) estadoConfig.mensajeCerrado = 'Ahora mismo no estamos laborando. Puedes ver el menú y escribirnos cuando estemos abiertos. ¡Te esperamos! 🐝';
       if (!estadoConfig.zonaHoraria) estadoConfig.zonaHoraria = 'America/Santo_Domingo';
       if (!estadoConfig.horario) estadoConfig.horario = {};
-      DIAS.forEach(([k]) => { if (!estadoConfig.horario[k]) estadoConfig.horario[k] = { abre: '', cierra: '' }; });
+      // Normaliza todos los días al formato de turnos
+      DIAS.forEach(([k]) => { estadoConfig.horario[k] = { turnos: turnosDe(estadoConfig.horario[k]) }; });
     }
 
     // ---- Dibujar el editor ----
@@ -249,22 +261,52 @@
       const cont = document.getElementById('horarioEditor');
       cont.innerHTML = '';
       DIAS.forEach(([k, label]) => {
-        const h = estadoConfig.horario[k] || { abre: '', cierra: '' };
-        const abierto = !!(h.abre && h.cierra);
-        const row = document.createElement('div');
-        row.className = 'fila-dia';
-        row.innerHTML = `
-          <label class="dia-chk"><input type="checkbox" ${abierto ? 'checked' : ''} onchange="toggleDia('${k}', this.checked)"> ${label}</label>
-          <input type="time" value="${esc(h.abre)}" ${abierto ? '' : 'disabled'} onchange="setHora('${k}','abre',this.value)">
-          <input type="time" value="${esc(h.cierra)}" ${abierto ? '' : 'disabled'} onchange="setHora('${k}','cierra',this.value)">`;
-        cont.appendChild(row);
+        const turnos = estadoConfig.horario[k].turnos;
+        const abierto = turnos.length > 0;
+        const conPausa = turnos.length >= 2;
+        const card = document.createElement('div');
+        card.className = 'dia-card';
+        let html = `<label class="dia-chk"><input type="checkbox" ${abierto ? 'checked' : ''} onchange="toggleDia('${k}', this.checked)"> ${label}</label>`;
+        if (abierto) {
+          html += `<div class="turnos">
+            <div class="turno-row">
+              ${conPausa ? '<span class="etq">Mañana</span>' : ''}
+              <input type="time" value="${esc(turnos[0].abre)}" onchange="setHoraTurno('${k}',0,'abre',this.value)">
+              <span class="a">a</span>
+              <input type="time" value="${esc(turnos[0].cierra)}" onchange="setHoraTurno('${k}',0,'cierra',this.value)">
+            </div>
+            <label class="pausa-chk"><input type="checkbox" ${conPausa ? 'checked' : ''} onchange="togglePausa('${k}', this.checked)"> Cierro un rato al mediodía</label>`;
+          if (conPausa) {
+            html += `<div class="turno-row">
+              <span class="etq">Tarde</span>
+              <input type="time" value="${esc(turnos[1].abre)}" onchange="setHoraTurno('${k}',1,'abre',this.value)">
+              <span class="a">a</span>
+              <input type="time" value="${esc(turnos[1].cierra)}" onchange="setHoraTurno('${k}',1,'cierra',this.value)">
+            </div>`;
+          }
+          html += `</div>`;
+        }
+        card.innerHTML = html;
+        cont.appendChild(card);
       });
     }
     function toggleDia(k, on) {
-      estadoConfig.horario[k] = on ? { abre: '06:00', cierra: '21:00' } : { abre: '', cierra: '' };
+      estadoConfig.horario[k] = { turnos: on ? [{ abre: '06:00', cierra: '21:00' }] : [] };
       renderHorario();
     }
-    function setHora(k, campo, val) { estadoConfig.horario[k][campo] = val; }
+    function setHoraTurno(k, idx, campo, val) { estadoConfig.horario[k].turnos[idx][campo] = val; }
+    function togglePausa(k, on) {
+      const t = estadoConfig.horario[k].turnos;
+      if (on) {
+        const fin = t[0].cierra || '21:00';
+        t[0].cierra = '12:00';
+        estadoConfig.horario[k].turnos = [t[0], { abre: '14:00', cierra: fin }];
+      } else {
+        const fin = (t[1] && t[1].cierra) || t[0].cierra;
+        estadoConfig.horario[k].turnos = [{ abre: t[0].abre, cierra: fin }];
+      }
+      renderHorario();
+    }
 
     function renderCategorias() {
       const cats = document.getElementById('categorias');

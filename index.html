@@ -418,18 +418,23 @@
       return { dia: mapa[p.weekday], minutos: (parseInt(p.hour,10) % 24) * 60 + parseInt(p.minute,10) };
     }
     function minutosDe(hhmm) { const [h,m] = hhmm.split(':').map(Number); return h*60 + m; }
+    // Devuelve los turnos de un día como lista [{abre,cierra}]. Soporta formato viejo {abre,cierra} y nuevo {turnos:[...]}.
+    function turnosDe(h) {
+      if (!h) return [];
+      if (Array.isArray(h.turnos)) return h.turnos.filter(t => t && t.abre && t.cierra);
+      if (h.abre && h.cierra) return [{ abre: h.abre, cierra: h.cierra }];
+      return [];
+    }
     function estaAbierto() {
       if (!CONFIG.horario) return true;
       const { dia, minutos } = ahoraNegocio();
-      const h = CONFIG.horario[dia];
-      if (!h || !h.abre || !h.cierra) return false;
-      return minutos >= minutosDe(h.abre) && minutos < minutosDe(h.cierra);
+      return turnosDe(CONFIG.horario[dia]).some(t => minutos >= minutosDe(t.abre) && minutos < minutosDe(t.cierra));
     }
     function listaHorarioHTML() {
       const hoy = ahoraNegocio().dia;
       return ORDEN_DIAS.map(d => {
-        const h = CONFIG.horario[d];
-        const txt = (h && h.abre && h.cierra) ? `${h.abre} - ${h.cierra}` : 'Cerrado';
+        const t = turnosDe(CONFIG.horario[d]);
+        const txt = t.length ? t.map(x => `${x.abre} - ${x.cierra}`).join(' y ') : 'Cerrado';
         return `<div class="fila-horario ${d===hoy?'hoy':''}"><span>${NOMBRE_DIA[d]}</span><span>${txt}</span></div>`;
       }).join('');
     }
